@@ -1,0 +1,114 @@
+docker pull cassandra:latest
+
+docker run --name cassandra-container -d -p 9042:9042 cassandra:latest
+
+docker ps
+
+C:\Users\CSE>docker exec -it cassandra-container cqlsh
+Connection error: ('Unable to connect to any servers', {'127.0.0.1:9042': ConnectionRefusedError(111, "Tried connecting to [('127.0.0.1', 9042)]. Last error: Connection refused")})
+
+#IF ERROR THEN WRITE BELOW COMMANDS
+docker logs cassandra-container
+
+>docker exec -it cassandra-container cqlsh cassandra-container
+
+>docker inspect --format '{{.NetworkSettings.IPAddress}}' cassandra-container
+'172.17.0.2'
+
+docker exec -it cassandra-container cqlsh localhost
+#TILL HERE---------
+
+cqlsh> 127.0.0.1
+
+1.BUYERS CASSANDRA
+
+CREATE KEYSPACE buyer_events WITH replication = {'class': 'SimpleStrategy', 'replication_factor': 1};
+USE buyer_events;
+CREATE TABLE buyers (
+                     buyer_id INT PRIMARY KEY,
+                     username TEXT,
+                     email TEXT,
+                     address TEXT
+                 );
+
+insert into buyers(buyer_id,username,email,address) values(1,'user1','user1@example.com','hyd');
+
+cqlsh:buyer_events> INSERT INTO buyers (buyer_id, username, email, address) VALUES (2, 'user2', 'user2@example.com', 'mum');
+cqlsh:buyer_events> INSERT INTO buyers (buyer_id, username, email, address) VALUES (3, 'user3', 'user3@example.com', 'pun');
+cqlsh:buyer_events> INSERT INTO buyers (buyer_id, username, email, address) VALUES (4, 'user4', 'user4@example.com', 'hyd');
+cqlsh:buyer_events> INSERT INTO buyers (buyer_id, username, email, address) VALUES (5, 'user5', 'user5@example.com', 'pun');
+cqlsh:buyer_events> INSERT INTO buyers (buyer_id, username, email, address) VALUES (6, 'user6', 'user6@example.com', 'mum');
+cqlsh:buyer_events> select * from buyers;
+
+
+create table products(
+  product_id int primary key,
+  name text,
+  category text,
+  price int);
+
+insert into products(product_id,name,category,price) values (1, 'coffee maker', 'appliances', 60);
+insert into products (product_id, name, category, price) values (2, 'phone', 'electronics', 300);               
+insert into products (product_id, name, category, price) values (3, 'led tv', 'electronics', 600);
+insert into products (product_id, name, category, price) values (4,'running shoes', 'apparel', 100);
+insert into products (product_id, name, category, price) values (5,'oven', 'appliances', 500);
+cqlsh:buyer_events> select * from products;
+
+create table purchase_history(
+  transactionID int primary key,
+  buyer_id int,
+  product_id int,
+  quantity int,
+  total_amount int,
+  purchase_date timestamp);
+
+insert into purchase_history(transactionID,buyer_id,product_id,quantity,total_amount,purchase_date) values(1,1,5,2,800,toTimestamp(now()));
+insert into purchase_history(transactionID,buyer_id,product_id,quantity,total_amount,purchase_date) values(2,1,4,4,400,toTimestamp(now()));
+insert into purchase_history(transactionID,buyer_id,product_id,quantity,total_amount,purchase_date) values(3,2,4,1,100,toTimestamp(now()));
+insert into purchase_history(transactionID,buyer_id,product_id,quantity,total_amount,purchase_date) values(4,2,1,3,180,toTimestamp(now()));
+insert into purchase_history(transactionID,buyer_id,product_id,quantity,total_amount,purchase_date) values(5,3,3,4,2400,toTimestamp(now()));
+insert into purchase_history(transactionID,buyer_id,product_id,quantity,total_amount,purchase_date) values(6,4,2,2,600,toTimestamp(now()));
+
+select * from purchase_history where buyer_id = 1 allow filtering;
+
+select count(product_id) from products;
+
+select sum(total_amount) from purchase_history where buyer_id = 2 allow filtering;
+
+select * from products where category = 'electronics' allow filtering;
+
+Select max(price) from products;
+
+select avg(price) from products where category='electronics' allow filtering;
+
+select * from products where price>=100 and price<=400 allow filtering;
+
+select count(buyer_id) from buyers where address='pun' allow filtering;
+
+select * from purchase_history where product_id = 4 allow filtering;
+
+select sum(total_amount) from purchase_history where product_id = 4 allow filtering;
+
+
+2.SOCIAL MEDIA ANALYTICS
+
+create keyspace social_media
+ with replication = {'class':'SimpleStrategy','replication_factor':1};
+
+use social_media;
+create table social_media.users(
+  user_id int primary key,
+  username text,
+  email text,
+  registration_date timestamp
+  );
+
+insert into social_media.users(user_id,username,email,registration_date) values(1,'user1','user1@example.com',toTimestamp(now()));
+insert into social_media.users(user_id,username,email,registration_date) values(2,'user2','user2@example.com',toTimestamp(now()));
+insert into social_media.users(user_id,username,email,registration_date) values(3,'user3','user3@example.com',toTimestamp(now()));
+insert into social_media.users(user_id,username,email,registration_date) values(4,'user4','user4@example.com',toTimestamp(now()));
+insert into social_media.users(user_id,username,email,registration_date) values(5,'user5','user5@example.com',toTimestamp(now()));
+
+select * from users;
+
+ 

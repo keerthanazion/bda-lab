@@ -1,0 +1,127 @@
+Step 1: Verify Docker Installation
+First, check if Docker is installed:
+
+
+C:\Users\CSE>docker --version
+Step 2: Clone Hadoop Docker Repository
+Clone the Docker Hadoop repository:
+
+
+C:\Users\CSE>git clone https://github.com/big-data-europe/docker-hadoop.git
+Step 3: Navigate to the Repository
+
+C:\Users\CSE>cd docker-hadoop
+Step 4: Start Hadoop Services using Docker Compose
+
+C:\Users\CSE\docker-hadoop>docker-compose up -d
+Step 5: Verify Running Containers
+Ensure all containers are up and running:
+
+
+C:\Users\CSE\docker-hadoop>docker container ls
+Step 6: Access the Namenode Container
+
+C:\Users\CSE\docker-hadoop>docker exec -it namenode bash
+Step 7: Verify HDFS Directory
+
+root@namenode:/# hdfs dfs -ls /
+Step 8: Create Sample Files
+Create sample text files using echo:
+
+
+root@namenode:/# echo "hadoop mapreduce tutorial" > doc1.txt
+root@namenode:/# echo "hadoop tutorial example" > doc2.txt
+root@namenode:/# echo "mapreduce example tutorial" > doc3.txt
+Step 9: Create a Directory in HDFS
+
+root@namenode:/# hdfs dfs -mkdir /techcore
+Step 10: Upload Files to HDFS
+
+
+
+root@namenode:/# hdfs dfs -put doc*.txt /techcore/
+Step 11: Verify Files in HDFS
+
+root@namenode:/# hdfs dfs -ls /techcore
+root@namenode:/# hdfs dfs -ls /techcore/doc*.txt
+Step 12: Display File Content
+
+root@namenode:/# hdfs dfs -cat /techcore/doc*.txt
+Step 13: Create InvertedIndex.java Using cat <<EOF
+
+root@namenode:/# cat <<EOF > InvertedIndex.java
+import java.io.IOException;
+import java.util.StringTokenizer;
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.io.Text;
+import org.apache.hadoop.io.LongWritable;
+import org.apache.hadoop.mapreduce.Job;
+import org.apache.hadoop.mapreduce.Mapper;
+import org.apache.hadoop.mapreduce.Reducer;
+import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
+import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
+
+public class InvertedIndex {
+
+    public static class TokenizerMapper extends Mapper<LongWritable, Text, Text, Text> {
+        private Text word = new Text();
+        private Text fileName = new Text();
+
+        @Override
+        protected void setup(Context context) throws IOException, InterruptedException {
+            String filePath = ((org.apache.hadoop.mapreduce.lib.input.FileSplit) context.getInputSplit()).getPath().getName();
+            fileName.set(filePath);
+        }
+
+        public void map(LongWritable key, Text value, Context context) throws IOException, InterruptedException {
+            StringTokenizer itr = new StringTokenizer(value.toString());
+            while (itr.hasMoreTokens()) {
+                word.set(itr.nextToken().toLowerCase());
+                context.write(word, fileName);
+            }
+        }
+    }
+
+    public static class IndexReducer extends Reducer<Text, Text, Text, Text> {
+        public void reduce(Text key, Iterable<Text> values, Context context) throws IOException, InterruptedException {
+            StringBuilder fileList = new StringBuilder();
+            for (Text file : values) {
+                if (fileList.length() > 0) {
+                    fileList.append(", ");
+                }
+                fileList.append(file.toString());
+            }
+            context.write(key, new Text(fileList.toString()));
+        }
+    }
+
+    public static void main(String[] args) throws Exception {
+        Configuration conf = new Configuration();
+        Job job = Job.getInstance(conf, "Inverted Index");
+        job.setJarByClass(InvertedIndex.class);
+        job.setMapperClass(TokenizerMapper.class);
+        job.setReducerClass(IndexReducer.class);
+        job.setOutputKeyClass(Text.class);
+        job.setOutputValueClass(Text.class);
+        FileInputFormat.addInputPath(job, new Path(args[0]));
+        FileOutputFormat.setOutputPath(job, new Path(args[1]));
+        System.exit(job.waitForCompletion(true) ? 0 : 1);
+    }
+}
+EOF
+Step 14: Compile the Java Program
+
+root@namenode:/# javac -classpath $(hadoop classpath) -d . InvertedIndex.java
+Step 15: Create a JAR File
+
+root@namenode:/# jar cf invertedindex.jar InvertedIndex*.class
+Step 16: Run the Inverted Index MapReduce Job
+
+root@namenode:/# hadoop jar invertedindex.jar InvertedIndex /techcore /techcore/output
+Step 17: Verify Output in HDFS
+
+root@namenode:/# hdfs dfs -ls /techcore/output
+Step 18: Display the Final Output
+
+root@namenode:/# hdfs dfs -cat /techcore/output/part-r-00000
