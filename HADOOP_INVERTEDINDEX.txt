@@ -8,6 +8,10 @@ Clone the Docker Hadoop repository:
 
 
 C:\Users\CSE>git clone https://github.com/big-data-europe/docker-hadoop.git
+
+if error here:
+rmdir /s /q docker-hadoop again clone
+
 Step 3: Navigate to the Repository
 
 C:\Users\CSE>cd docker-hadoop
@@ -125,3 +129,10 @@ root@namenode:/# hdfs dfs -ls /techcore/output
 Step 18: Display the Final Output
 
 root@namenode:/# hdfs dfs -cat /techcore/output/part-r-00000
+
+Step 19:Display all files in directory
+root@namenode:/# ls -al
+if you need only docs
+root@namenode:/# ls -al /doc*.txt
+if you want to see content in individual files
+root@namenode:/# cat doc1.txt
