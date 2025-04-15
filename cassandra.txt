@@ -92,8 +92,7 @@ select sum(total_amount) from purchase_history where product_id = 4 allow filter
 
 2.SOCIAL MEDIA ANALYTICS
 
-create keyspace social_media
- with replication = {'class':'SimpleStrategy','replication_factor':1};
+create keyspace social_media with replication = {'class':'SimpleStrategy','replication_factor':1};
 
 use social_media;
 create table social_media.users(
