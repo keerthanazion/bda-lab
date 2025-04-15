@@ -4,7 +4,7 @@ docker run --name cassandra-container -d -p 9042:9042 cassandra:latest
 
 docker ps
 
-C:\Users\CSE>docker exec -it cassandra-container cqlsh
+docker exec -it cassandra-container cqlsh
 Connection error: ('Unable to connect to any servers', {'127.0.0.1:9042': ConnectionRefusedError(111, "Tried connecting to [('127.0.0.1', 9042)]. Last error: Connection refused")})
 
 #IF ERROR THEN WRITE BELOW COMMANDS
